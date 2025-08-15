@@ -212,6 +212,7 @@ function closeModal(id){const m=$('#'+id); if(m){m.style.display='none'; documen
 /* ================= Auth (Cognito) ================= */
 let idToken = localStorage.getItem('pz_id_token') || '';
 let cognitoUser = null;
+let lastSignUpEmail = '', lastSignUpPass = '';
 
 function pool(){
   const poolData={ UserPoolId: COGNITO.userPoolId, ClientId: COGNITO.clientId };
@@ -222,6 +223,8 @@ function signUp(){
   const email=$('#signupEmail').value.trim();
   const pass=$('#signupPass').value;
   if(!email || !pass){ toast('Completa correo y contraseña','error'); return; }
+  lastSignUpEmail=email;
+  lastSignUpPass=pass;
   const attributeList=[ new AmazonCognitoIdentity.CognitoUserAttribute({Name:'email',Value:email}) ];
   pool().signUp(email, pass, attributeList, null, (err, result)=>{
     if(err){ console.error(err); toast(err.message||'Error de registro','error'); return; }
@@ -239,8 +242,11 @@ function confirmSignUp(){
   const user=new AmazonCognitoIdentity.CognitoUser(userData);
   user.confirmRegistration(code, true, (err, result)=>{
     if(err){ console.error(err); toast(err.message||'Error al confirmar','error'); return; }
-    toast('¡Correo confirmado! Ya puedes iniciar sesión','success');
-    closeModal('confirmModal'); openModal('loginModal');
+    toast('¡Correo confirmado! Completa tu perfil','success');
+    closeModal('confirmModal');
+    $('#loginEmail').value=email;
+    $('#loginPass').value=lastSignUpPass;
+    signIn();
   });
 }
 
@@ -281,27 +287,52 @@ function loadProfile(){
   if(p.avatar){
     $('#profileAvatar').src=p.avatar;
     $('#profileAvatar').style.display='block';
-    $('#profileAvatarUrl').value=p.avatar;
+    const prev=$('#profilePreview');
+    if(prev){ prev.src=p.avatar; prev.style.display='block'; }
   } else {
     $('#profileAvatar').style.display='none';
-    $('#profileAvatarUrl').value='';
+    const prev=$('#profilePreview');
+    if(prev){ prev.style.display='none'; }
   }
+  const file=$('#profileAvatarFile'); if(file) file.value='';
   return p;
 }
 
-function saveProfile(e){
+async function saveProfile(e){
   e.preventDefault();
-  const p={name:$('#profileName').value.trim(),bio:$('#profileBio').value.trim(),avatar:$('#profileAvatarUrl').value.trim()};
+  const name=$('#profileName').value.trim();
+  const bio=$('#profileBio').value.trim();
+  let avatar=$('#profileAvatar').src||'';
+  const file=$('#profileAvatarFile').files[0];
+  if(file){
+    try{
+      avatar=await readFileAsDataURL(file);
+      $('#profileAvatar').src=avatar;
+      $('#profileAvatar').style.display='block';
+      const prev=$('#profilePreview'); if(prev){ prev.src=avatar; prev.style.display='block'; }
+    }catch(err){ console.error(err); toast('Error al procesar la imagen','error'); return; }
+  }
+  const p={name,bio,avatar};
   localStorage.setItem('pz_profile', JSON.stringify(p));
   $('#profileLabel').textContent=p.name||'Perfil';
-  if(p.avatar){
-    $('#profileAvatar').src=p.avatar;
-    $('#profileAvatar').style.display='block';
-  } else {
-    $('#profileAvatar').style.display='none';
-  }
+  if(avatar){ $('#profileAvatar').style.display='block'; } else { $('#profileAvatar').style.display='none'; }
   toast('Perfil guardado','success');
   closeModal('profileModal');
+}
+
+function readFileAsDataURL(f){
+  return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(f); });
+}
+
+function previewAvatar(file){
+  if(!file){ return; }
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const src=e.target.result;
+    $('#profileAvatar').src=src; $('#profileAvatar').style.display='block';
+    const prev=$('#profilePreview'); if(prev){ prev.src=src; prev.style.display='block'; }
+  };
+  reader.readAsDataURL(file);
 }
 
 function logout(){
@@ -602,7 +633,10 @@ function upcomingCountFrom(data){const today=new Date(),mid=new Date(today.toDat
     <form id="profileForm" onsubmit="saveProfile(event)">
       <div><label>Nombre *</label><input id="profileName" required></div>
       <div><label>Bio</label><textarea id="profileBio" rows="3" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px"></textarea></div>
-      <div><label>Avatar URL</label><input id="profileAvatarUrl" type="url"></div>
+      <div style="text-align:center;margin:10px 0;">
+        <img id="profilePreview" class="profile-avatar" style="display:none;width:64px;height:64px;border:2px solid var(--primary-orange);border-radius:50%;object-fit:cover;">
+      </div>
+      <div><label>Foto de perfil</label><input id="profileAvatarFile" type="file" accept="image/*" onchange="previewAvatar(this.files[0])"></div>
       <button type="submit" class="submit-btn" style="margin-top:10px">Guardar</button>
     </form>
   </div>
