@@ -19,4 +19,13 @@ rad.json
 #License-file
 *.flf
 #Test results file
-TestResults.xml
+TestResults.xml*.pem
+*.key
+*.crt
+infraestructura-info.txt
+.env
+infra/variables.env
+__pycache__/
+node_modules/
+.vscode/
+.DS_Store
