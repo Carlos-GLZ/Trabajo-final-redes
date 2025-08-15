@@ -74,6 +74,8 @@ footer{background:linear-gradient(135deg,var(--primary-dark),#0F172A);color:#fff
     <a href="#empresas">Empresas</a>
     <a href="#eventos">Eventos</a>
     <button id="loginBtn" onclick="openModal('loginModal')">Iniciar sesión</button>
+    <button id="uploadBtn" style="display:none" onclick="openModal('uploadModal')">Subir proyecto</button>
+    <button id="profileBtn" style="display:none" onclick="openModal('profileModal')">Perfil</button>
     <button id="logoutBtn" style="display:none" onclick="logout()">Cerrar sesión</button>
   </nav>
 </header>
@@ -252,10 +254,35 @@ function signIn(){
       toast('Inicio de sesión correcto','success');
       $('#loginBtn').style.display='none';
       $('#logoutBtn').style.display='inline-block';
+      $('#uploadBtn').style.display='inline-block';
+      $('#profileBtn').style.display='inline-block';
+      loadProfile();
+      if(!localStorage.getItem('pz_profile')) openModal('profileModal');
       closeModal('loginModal');
     },
     onFailure: (err)=>{ console.error(err); toast(err.message||'Credenciales inválidas','error'); }
   });
+}
+
+function loadProfile(){
+  const p=JSON.parse(localStorage.getItem('pz_profile')||'{}');
+  if(p.name){
+    $('#profileBtn').textContent=p.name;
+    $('#profileName').value=p.name;
+    $('#profileBio').value=p.bio||'';
+  } else {
+    $('#profileBtn').textContent='Perfil';
+  }
+  return p;
+}
+
+function saveProfile(e){
+  e.preventDefault();
+  const p={name:$('#profileName').value.trim(),bio:$('#profileBio').value.trim()};
+  localStorage.setItem('pz_profile', JSON.stringify(p));
+  $('#profileBtn').textContent=p.name||'Perfil';
+  toast('Perfil guardado','success');
+  closeModal('profileModal');
 }
 
 function logout(){
@@ -264,6 +291,8 @@ function logout(){
   localStorage.removeItem('pz_id_token'); localStorage.removeItem('pz_username');
   $('#loginBtn').style.display='inline-block';
   $('#logoutBtn').style.display='none';
+  $('#uploadBtn').style.display='none';
+  $('#profileBtn').style.display='none';
   toast('Sesión cerrada','info');
 }
 
@@ -277,7 +306,13 @@ const projectCategories={
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Estado UI login
-  if(idToken){ $('#loginBtn').style.display='none'; $('#logoutBtn').style.display='inline-block'; }
+  if(idToken){
+    $('#loginBtn').style.display='none';
+    $('#logoutBtn').style.display='inline-block';
+    $('#uploadBtn').style.display='inline-block';
+    $('#profileBtn').style.display='inline-block';
+    loadProfile();
+  }
 
   // Cargar proyectos (API si existe)
   try { await fetchProjectsFromApi(); } catch {}
@@ -534,6 +569,19 @@ function upcomingCountFrom(data){const today=new Date(),mid=new Date(today.toDat
         </select>
       </div>
       <button type="submit" class="submit-btn" style="margin-top:10px">Enviar</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Perfil -->
+<div id="profileModal" class="modal">
+  <div class="content">
+    <span class="close" onclick="closeModal('profileModal')">&times;</span>
+    <h3 style="margin-bottom:10px"><i class="fas fa-user"></i> Perfil de Usuario</h3>
+    <form id="profileForm" onsubmit="saveProfile(event)">
+      <div><label>Nombre *</label><input id="profileName" required></div>
+      <div><label>Bio</label><textarea id="profileBio" rows="3" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px"></textarea></div>
+      <button type="submit" class="submit-btn" style="margin-top:10px">Guardar</button>
     </form>
   </div>
 </div>
