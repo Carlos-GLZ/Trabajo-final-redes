@@ -3,7 +3,7 @@ set -euo pipefail
 
 # =============================== #
 #  PitchZone - deploy-web-site.sh #
-#   WEB + BACKEND (CFN) + AUTH    #
+#  WEB + BACKEND (CFN) + COGNITO  #
 # =============================== #
 
 # --- 0) Infra info ---
@@ -49,7 +49,7 @@ upload_if_exists "$EVENTS_FILE"
 upload_if_exists "$INDEX_FILE"
 upload_if_exists "$UE_JSON_FILE"
 
-# --- 2) Plantilla CFN del backend (API + Lambdas + Dynamo) ---
+# --- 2) Plantilla CFN del backend (POST/GET projects) ---
 CFN_FILE="pitchzone-backend.yml"
 cat > "$CFN_FILE" <<'YML'
 AWSTemplateFormatVersion: '2010-09-09'
@@ -327,100 +327,7 @@ if [ -z "$API_BASE" ] || [ "$API_BASE" = "None" ]; then
 fi
 echo "🌐 API_BASE: $API_BASE"
 
-# --- 3.1) AUTH: Cognito (UserPool + Client) y Authorizer JWT ---
-CFN_AUTH="pitchzone-auth.yml"
-
-# Deducir API_ID y REGION desde API_BASE (robusto + sin supuestos de config local)
-API_HOST="${API_BASE#https://}"; API_HOST="${API_HOST%%/*}"
-API_ID="${API_HOST%%.*}"                                          # ej. 0d54r1dg36
-AWS_REGION_FROM_URL="$(echo "$API_BASE" | sed -n 's#https\?://[^.]*\.execute-api\.\([^.]*\)\.amazonaws\.com/.*#\1#p')"
-AWS_REGION="${AWS_REGION_FROM_URL:-$(aws configure get region || echo us-east-1)}"
-
-cat > "$CFN_AUTH" <<'YML'
-AWSTemplateFormatVersion: '2010-09-09'
-Description: PitchZone Auth - Cognito + Authorizer para API
-
-Parameters:
-  ApiId:
-    Type: String
-  StageName:
-    Type: String
-    Default: prod
-
-Resources:
-  UserPool:
-    Type: AWS::Cognito::UserPool
-    Properties:
-      UserPoolName: pitchzone-users
-      UsernameAttributes: [email]
-      AutoVerifiedAttributes: [email]
-      Policies:
-        PasswordPolicy:
-          MinimumLength: 8
-          RequireLowercase: true
-          RequireNumbers: true
-          RequireSymbols: false
-          RequireUppercase: true
-      VerificationMessageTemplate:
-        DefaultEmailOption: CONFIRM_WITH_CODE
-
-  UserPoolClient:
-    Type: AWS::Cognito::UserPoolClient
-    Properties:
-      UserPoolId: !Ref UserPool
-      ClientName: web-client
-      GenerateSecret: false
-      ExplicitAuthFlows:
-        - ALLOW_USER_PASSWORD_AUTH
-        - ALLOW_REFRESH_TOKEN_AUTH
-        - ALLOW_USER_SRP_AUTH
-
-  JwtAuthorizer:
-    Type: AWS::ApiGatewayV2::Authorizer
-    Properties:
-      ApiId: !Ref ApiId
-      AuthorizerType: JWT
-      Name: cognito-jwt
-      IdentitySource:
-        - "$request.header.Authorization"
-      JwtConfiguration:
-        Audience: [ !Ref UserPoolClient ]
-        Issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}"
-
-Outputs:
-  UserPoolId:       { Value: !Ref UserPool }
-  UserPoolClientId: { Value: !Ref UserPoolClient }
-  AuthorizerId:     { Value: !Ref JwtAuthorizer }
-  Region:           { Value: !Ref AWS::Region }
-YML
-
-echo "🔐 Desplegando auth (Cognito)..."
-aws cloudformation deploy \
-  --stack-name pitchzone-auth \
-  --template-file "$CFN_AUTH" \
-  --parameter-overrides ApiId="$API_ID" StageName="$STAGE_NAME"
-
-USER_POOL_ID="$(aws cloudformation describe-stacks --stack-name pitchzone-auth \
-  --query "Stacks[0].Outputs[?OutputKey=='UserPoolId'].OutputValue" --output text)"
-APP_CLIENT_ID="$(aws cloudformation describe-stacks --stack-name pitchzone-auth \
-  --query "Stacks[0].Outputs[?OutputKey=='UserPoolClientId'].OutputValue" --output text)"
-AUTHORIZER_ID="$(aws cloudformation describe-stacks --stack-name pitchzone-auth \
-  --query "Stacks[0].Outputs[?OutputKey=='AuthorizerId'].OutputValue" --output text)"
-
-echo "🆔 Cognito: pool=$USER_POOL_ID client=$APP_CLIENT_ID region=$AWS_REGION"
-
-# Proteger POST /projects con JWT
-ROUTE_ID_POST="$(aws apigatewayv2 get-routes --api-id "$API_ID" \
-  --query "Items[?RouteKey=='POST /projects'].RouteId" --output text || true)"
-if [ -n "${ROUTE_ID_POST:-}" ] && [ "$ROUTE_ID_POST" != "None" ]; then
-  aws apigatewayv2 update-route --api-id "$API_ID" --route-id "$ROUTE_ID_POST" \
-    --authorization-type JWT --authorizer-id "$AUTHORIZER_ID" >/dev/null
-  echo "✅ Protegido POST /projects con JWT Authorizer"
-else
-  echo "⚠️  No pude obtener RouteId del POST /projects (¿se creó correctamente la API?)."
-fi
-
-# --- 4) Script remoto: HTML + assets ---
+# --- 4) Script remoto: HTML + assets (SIN inyectar JSON en HTML) ---
 cat > deploy-pitchzone-remote.sh <<'RSCRIPT'
 #!/bin/bash
 set -euo pipefail
@@ -463,7 +370,7 @@ if [ -n "${SRC}" ]; then
   sudo mv "${SRC}" /var/www/html/assets/alianzas.json
   sudo chown apache:apache /var/www/html/assets/alianzas.json
   sudo chmod 644 /var/www/html/assets/alianzas.json
-  # alias de compatibilidad
+  # alias de compatibilidad (si quedara alguna referencia antigua)
   sudo ln -sf /var/www/html/assets/alianzas.json /var/www/html/assets/universidades-empresas.json
 fi
 
@@ -489,25 +396,19 @@ else
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PitchZone - Súbelo. Preséntalo. Véndelo.</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
-<script src="https://unpkg.com/amazon-cognito-identity-js@6.3.9/dist/amazon-cognito-identity.min.js"></script>
-<style>
-/* estilos base del fallback (omitidos por brevedad) */
-body{font-family:Montserrat,Arial,sans-serif}
-</style>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
 <h1>PitchZone</h1>
+<p>Fallback mínimo. Sube tu index.html para ver el sitio completo.</p>
 <script>
-const API_BASE="%%API_BASE%%";
-const COGNITO={region:'%%COGNITO_REGION%%',userPoolId:'%%COGNITO_USER_POOL_ID%%',clientId:'%%COGNITO_APP_CLIENT_ID%%'};
+const API_BASE="%%API_BASE%%"; // será reemplazado por el deploy
 </script>
 </body>
 </html>
 HTMLEOF
 fi
 
-# Si subiste solo un snippet JS, lo anexamos envuelto en <script>
 if [ -f /tmp/index.html ] && [ "${USE_SNIPPET_ONLY}" -eq 1 ]; then
   echo "➕ Anexando snippet de index.html (envuelto en <script>)"
   sudo bash -c 'printf "\n<script>\n" >> /var/www/html/index.html'
@@ -516,7 +417,7 @@ if [ -f /tmp/index.html ] && [ "${USE_SNIPPET_ONLY}" -eq 1 ]; then
 fi
 
 sudo chown -R apache:apache /var/www/html/
-sudo chmod -R 755 /var/www/html/
+sudo chmod -r 755 /var/www/html/ || true
 sudo systemctl restart httpd
 echo "✅ Sitio desplegado (sin inyectar JSON en el HTML)."
 RSCRIPT
@@ -539,15 +440,37 @@ scp -i "$KEY_PEM" -o StrictHostKeyChecking=no deploy-pitchzone-remote.sh "$REMOT
 echo "🖥️  Ejecutando script remoto..."
 ssh -i "$KEY_PEM" -o StrictHostKeyChecking=no "$REMOTE" "chmod +x /tmp/deploy-pitchzone-remote.sh && sudo /tmp/deploy-pitchzone-remote.sh"
 
-# --- 6) Sustituir variables en el HTML (en la EC2) ---
-echo "✏️ Inyectando variables (API_BASE + Cognito) en index.html remoto ..."
-ssh -i "$KEY_PEM" -o StrictHostKeyChecking=no "$REMOTE" "\
-  sudo sed -i \
-  -e \"s|%%API_BASE%%|$API_BASE|g\" \
-  -e \"s|%%COGNITO_REGION%%|$AWS_REGION|g\" \
-  -e \"s|%%COGNITO_USER_POOL_ID%%|$USER_POOL_ID|g\" \
-  -e \"s|%%COGNITO_APP_CLIENT_ID%%|$APP_CLIENT_ID|g\" \
-  /var/www/html/index.html && sudo systemctl restart httpd"
+# --- 6) Sustituir API_BASE y COGNITO en el HTML remoto ---
+echo "✏️ Inyectando API_BASE en index.html remoto ..."
+ssh -i "$KEY_PEM" -o StrictHostKeyChecking=no "$REMOTE" "sudo sed -i \"s|%%API_BASE%%|$API_BASE|g\" /var/www/html/index.html"
+
+# Variables de Cognito opcionales (si no están, dejamos placeholders y avisamos)
+COGNITO_REGION="${COGNITO_REGION:-}"
+COGNITO_USER_POOL_ID="${COGNITO_USER_POOL_ID:-}"
+COGNITO_APP_CLIENT_ID="${COGNITO_APP_CLIENT_ID:-}"
+
+if [ -n "$COGNITO_REGION" ]; then
+  echo "✏️ Inyectando COGNITO_REGION=$COGNITO_REGION ..."
+  ssh -i "$KEY_PEM" -o StrictHostKeyChecking=no "$REMOTE" "sudo sed -i \"s|%%COGNITO_REGION%%|$COGNITO_REGION|g\" /var/www/html/index.html"
+else
+  echo "⚠️  COGNITO_REGION no seteado: placeholder quedará sin reemplazar."
+fi
+
+if [ -n "$COGNITO_USER_POOL_ID" ]; then
+  echo "✏️ Inyectando COGNITO_USER_POOL_ID=$COGNITO_USER_POOL_ID ..."
+  ssh -i "$KEY_PEM" -o StrictHostKeyChecking=no "$REMOTE" "sudo sed -i \"s|%%COGNITO_USER_POOL_ID%%|$COGNITO_USER_POOL_ID|g\" /var/www/html/index.html"
+else
+  echo "⚠️  COGNITO_USER_POOL_ID no seteado: placeholder quedará sin reemplazar."
+fi
+
+if [ -n "$COGNITO_APP_CLIENT_ID" ]; then
+  echo "✏️ Inyectando COGNITO_APP_CLIENT_ID=$COGNITO_APP_CLIENT_ID ..."
+  ssh -i "$KEY_PEM" -o StrictHostKeyChecking=no "$REMOTE" "sudo sed -i \"s|%%COGNITO_APP_CLIENT_ID%%|$COGNITO_APP_CLIENT_ID|g\" /var/www/html/index.html"
+else
+  echo "⚠️  COGNITO_APP_CLIENT_ID no seteado: placeholder quedará sin reemplazar."
+fi
+
+ssh -i "$KEY_PEM" -o StrictHostKeyChecking=no "$REMOTE" "sudo systemctl restart httpd"
 
 # --- 7) Verificación de alianzas.json ---
 echo "🔎 Verificando alianzas.json por HTTP ..."
@@ -563,14 +486,11 @@ fi
 rm -f deploy-pitchzone-remote.sh
 
 echo ""
-echo "🎉 ¡PITCHZONE desplegado con BACKEND + AUTH + JSON unificado!"
+echo "🎉 ¡PITCHZONE desplegado con BACKEND + JSON unificado!"
 echo "🌐 Web:   http://$PUBLIC_IP"
 echo "🛠️  API:  $API_BASE"
-echo "   • POST $API_BASE/projects   (protegido con JWT)"
+echo "   • POST $API_BASE/projects"
 echo "   • GET  $API_BASE/projects"
-echo "🔐 Cognito"
-echo "   • Pool: $USER_POOL_ID"
-echo "   • App Client: $APP_CLIENT_ID"
 echo "📦 JSON:  http://$PUBLIC_IP/assets/alianzas.json"
 echo ""
 echo "Sugerencia front-end: fetch('/assets/alianzas.json?v=' + Date.now())"
