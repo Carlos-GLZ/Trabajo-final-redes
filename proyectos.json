@@ -7,7 +7,8 @@
       "Luis Gómez",
       "María José"
     ],
-    "funding_necesario": 25000
+    "funding_necesario": 25000,
+    "categoria": "eco"
   },
   {
     "nombre_proyecto": "PetMatch",
@@ -17,7 +18,8 @@
       "Fer Sánchez",
       "Renata López"
     ],
-    "funding_necesario": 18000
+    "funding_necesario": 18000,
+    "categoria": "social"
   },
   {
     "nombre_proyecto": "Exxxtasis",
@@ -27,7 +29,8 @@
       "Majo Sanchez",
       "Aaron Salvador"
     ],
-    "funding_necesario": 30000
+    "funding_necesario": 30000,
+    "categoria": "social"
   },
   {
     "nombre_proyecto": "SmartWaste",
@@ -36,7 +39,8 @@
       "Carlos Díaz",
       "Lucía Mendoza"
     ],
-    "funding_necesario": 22000
+    "funding_necesario": 22000,
+    "categoria": "eco"
   },
   {
     "nombre_proyecto": "FitFinance",
@@ -46,7 +50,8 @@
       "Sofía Vega",
       "Emma Duarte"
     ],
-    "funding_necesario": 19500
+    "funding_necesario": 19500,
+    "categoria": "finance"
   },
   {
     "nombre_proyecto": "EduPlay",
@@ -55,7 +60,8 @@
       "Diana Ruiz",
       "Felipe Morales"
     ],
-    "funding_necesario": 27000
+    "funding_necesario": 27000,
+    "categoria": "education"
   },
   {
     "nombre_proyecto": "AgroScan",
@@ -65,7 +71,8 @@
       "Gabriela Torres",
       "Pablo Rivas"
     ],
-    "funding_necesario": 35000
+    "funding_necesario": 35000,
+    "categoria": "tech"
   },
   {
     "nombre_proyecto": "SaludYA",
@@ -75,7 +82,8 @@
       "José Ángel",
       "Natalia Fernández"
     ],
-    "funding_necesario": 20000
+    "funding_necesario": 20000,
+    "categoria": "health"
   },
   {
     "nombre_proyecto": "JobQuest",
@@ -84,7 +92,8 @@
       "Ignacio Peralta",
       "Daniela López"
     ],
-    "funding_necesario": 23000
+    "funding_necesario": 23000,
+    "categoria": "tech"
   },
   {
     "nombre_proyecto": "CleanOcean",
@@ -94,6 +103,7 @@
       "Sebastián Cruz",
       "Héctor Vela"
     ],
-    "funding_necesario": 40000
+    "funding_necesario": 40000,
+    "categoria": "eco"
   }
 ]

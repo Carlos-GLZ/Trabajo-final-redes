@@ -22,6 +22,8 @@ header{background:rgba(1,37,56,.95);backdrop-filter:blur(10px);padding:14px 24px
 nav{display:flex;gap:18px;align-items:center}
 nav a, nav button{color:#fff;text-decoration:none;font-weight:700;opacity:.9;background:none;border:none;cursor:pointer}
 nav a:hover, nav button:hover{opacity:1;color:var(--primary-orange)}
+.profile-btn{display:flex;align-items:center;gap:8px}
+.profile-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--primary-orange)}
 .hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:70px 16px 40px}
 .hero-logo{width:108px;height:108px;border-radius:22px;box-shadow:0 10px 36px rgba(251,152,51,.35);margin-bottom:20px}
 .hero h1{font-size:3rem;font-weight:800;line-height:1.1;background:linear-gradient(45deg,var(--primary-orange),#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
@@ -75,7 +77,10 @@ footer{background:linear-gradient(135deg,var(--primary-dark),#0F172A);color:#fff
     <a href="#eventos">Eventos</a>
     <button id="loginBtn" onclick="openModal('loginModal')">Iniciar sesión</button>
     <button id="uploadBtn" style="display:none" onclick="openModal('uploadModal')">Subir proyecto</button>
-    <button id="profileBtn" style="display:none" onclick="openModal('profileModal')">Perfil</button>
+    <button id="profileBtn" class="profile-btn" style="display:none" onclick="openModal('profileModal')">
+      <img id="profileAvatar" class="profile-avatar" alt="Avatar" style="display:none">
+      <span id="profileLabel">Perfil</span>
+    </button>
     <button id="logoutBtn" style="display:none" onclick="logout()">Cerrar sesión</button>
   </nav>
 </header>
@@ -267,20 +272,45 @@ function signIn(){
 function loadProfile(){
   const p=JSON.parse(localStorage.getItem('pz_profile')||'{}');
   if(p.name){
-    $('#profileBtn').textContent=p.name;
+    $('#profileLabel').textContent=p.name;
     $('#profileName').value=p.name;
-    $('#profileBio').value=p.bio||'';
   } else {
-    $('#profileBtn').textContent='Perfil';
+    $('#profileLabel').textContent='Perfil';
+  }
+  $('#profileBio').value=p.bio||'';
+  $('#profileAvatarFile').value='';
+  if(p.avatar){
+    $('#profileAvatar').src=p.avatar;
+    $('#profileAvatar').style.display='block';
+    $('#profileAvatarUrl').value=p.avatar;
+  } else {
+    $('#profileAvatar').style.display='none';
+    $('#profileAvatarUrl').value='';
   }
   return p;
 }
 
-function saveProfile(e){
+async function saveProfile(e){
   e.preventDefault();
-  const p={name:$('#profileName').value.trim(),bio:$('#profileBio').value.trim()};
+  let avatar=$('#profileAvatarUrl').value.trim();
+  const file=$('#profileAvatarFile')?.files[0];
+  if(file){
+    avatar=await new Promise((res,rej)=>{
+      const reader=new FileReader();
+      reader.onload=()=>res(reader.result);
+      reader.onerror=rej;
+      reader.readAsDataURL(file);
+    });
+  }
+  const p={name:$('#profileName').value.trim(),bio:$('#profileBio').value.trim(),avatar};
   localStorage.setItem('pz_profile', JSON.stringify(p));
-  $('#profileBtn').textContent=p.name||'Perfil';
+  $('#profileLabel').textContent=p.name||'Perfil';
+  if(p.avatar){
+    $('#profileAvatar').src=p.avatar;
+    $('#profileAvatar').style.display='block';
+  } else {
+    $('#profileAvatar').style.display='none';
+  }
   toast('Perfil guardado','success');
   closeModal('profileModal');
 }
@@ -293,16 +323,13 @@ function logout(){
   $('#logoutBtn').style.display='none';
   $('#uploadBtn').style.display='none';
   $('#profileBtn').style.display='none';
+  $('#profileAvatar').style.display='none';
+  $('#profileLabel').textContent='Perfil';
   toast('Sesión cerrada','info');
 }
 
 /* ================= Datos: Proyectos ================= */
 let projectsData=[], currentFilter='all', projectVotes={};
-const projectCategories={
-  'EcoSmart Delivery':'eco','PetMatch':'social','Exxxtasis':'social','SmartWaste':'eco',
-  'FitFinance':'finance','EduPlay':'education','AgroScan':'tech','SaludYA':'health',
-  'JobQuest':'tech','CleanOcean':'eco'
-};
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Estado UI login
@@ -340,19 +367,25 @@ async function fetchProjectsFromApi(){
   const r = await fetch(API_PROJECTS);
   const arr = await r.json();
   if(!Array.isArray(arr)) return;
-  projectsData = arr.map(x=>({
+  const local=JSON.parse(localStorage.getItem('pz_local_projects')||'[]');
+  projectsData = local.concat(arr.map(x=>({
     nombre_proyecto:x.nombre_proyecto, descripcion:x.descripcion,
     integrantes:x.integrantes||[], funding_necesario:Number(x.funding_necesario)||0,
     categoria:x.categoria||'tech'
-  }));
+  })));
   updateStats(); renderProjects();
 }
 function loadProjectsFallback(){
   fetch('./proyectos.json?t='+Date.now(),{cache:'no-store'})
     .then(r=>r.ok?r.json():Promise.reject(r.status))
-    .then(d=>{projectsData=d; updateStats(); renderProjects();})
+    .then(d=>{
+      const local=JSON.parse(localStorage.getItem('pz_local_projects')||'[]');
+      projectsData=local.concat(d);
+      updateStats(); renderProjects();
+    })
     .catch(()=>{
-      projectsData=[
+      const local=JSON.parse(localStorage.getItem('pz_local_projects')||'[]');
+      projectsData=local.length?local:[
         {nombre_proyecto:"EcoSmart Delivery",descripcion:"Optimiza rutas con IA.",integrantes:["Ana","Luis","María"],funding_necesario:25000,categoria:"eco"},
         {nombre_proyecto:"PetMatch",descripcion:"Adopción interactiva.",integrantes:["Julia","Fer","Renata"],funding_necesario:18000,categoria:"social"},
         {nombre_proyecto:"SmartWaste",descripcion:"IoT para recolección inteligente.",integrantes:["Carlos","Lucía"],funding_necesario:22000,categoria:"eco"}
@@ -362,7 +395,7 @@ function loadProjectsFallback(){
 }
 function renderProjects(){
   const grid = $('#projectsGrid');
-  const list = currentFilter==='all'?projectsData:projectsData.filter(p=>projectCategories[p.nombre_proyecto]===currentFilter);
+  const list = currentFilter==='all'?projectsData:projectsData.filter(p=>(p.categoria||'').toLowerCase()===currentFilter);
   grid.innerHTML = list.map(p=>`
     <div class="card">
       <div class="header">
@@ -528,19 +561,30 @@ async function submitProject(event){
   };
   const btn=event.target.querySelector('.submit-btn');const orig=btn.innerHTML;btn.innerHTML='<div class="loading"></div> Enviando...';btn.disabled=true;
   try{
-    if (!API_BASE || API_BASE.includes('%%API_BASE%%')) throw new Error('API no configurada');
     if (!idToken){ closeModal('uploadModal'); openModal('loginModal'); throw new Error('Debes iniciar sesión para subir proyectos'); }
-
-    const res=await fetch(API_PROJECTS,{
-      method:'POST',
-      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+idToken },
-      body:JSON.stringify(formData)
-    });
-    const data=await res.json();
-    if(!res.ok||!data.ok) throw new Error(data.error||'Error al guardar');
+    if (API_BASE && !API_BASE.includes('%%API_BASE%%')){
+      const res=await fetch(API_PROJECTS,{
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+idToken },
+        body:JSON.stringify(formData)
+      });
+      const data=await res.json();
+      if(!res.ok||!data.ok) throw new Error(data.error||'Error al guardar');
+    } else {
+      const local=JSON.parse(localStorage.getItem('pz_local_projects')||'[]');
+      local.unshift(formData);
+      localStorage.setItem('pz_local_projects', JSON.stringify(local));
+      try {
+        const r=await fetch('./proyectos.json',{cache:'no-store'});
+        if(r.ok){
+          const arr=await r.json();
+          arr.unshift(formData);
+          await fetch('./proyectos.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(arr,null,2)});
+        }
+      }catch(e){}
+    }
 
     projectsData.unshift(formData);
-    projectCategories[formData.nombre_proyecto]=formData.categoria;
     projectVotes[formData.nombre_proyecto]=0;
     updateStats(); renderProjects();
     toast('¡Proyecto enviado y guardado! 🚀','success');
@@ -581,6 +625,8 @@ function upcomingCountFrom(data){const today=new Date(),mid=new Date(today.toDat
     <form id="profileForm" onsubmit="saveProfile(event)">
       <div><label>Nombre *</label><input id="profileName" required></div>
       <div><label>Bio</label><textarea id="profileBio" rows="3" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px"></textarea></div>
+      <div><label>Avatar URL</label><input id="profileAvatarUrl" type="url" placeholder="https://..."></div>
+      <div><label>Subir foto</label><input id="profileAvatarFile" type="file" accept="image/*"></div>
       <button type="submit" class="submit-btn" style="margin-top:10px">Guardar</button>
     </form>
   </div>
