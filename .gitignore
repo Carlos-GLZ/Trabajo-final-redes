@@ -29,3 +29,8 @@ __pycache__/
 node_modules/
 .vscode/
 .DS_Store
+*.pem
+infraestructura-info.txt
+*.log
+*.tar.gz
+*.zip
