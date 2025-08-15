@@ -575,3 +575,5 @@ echo "📦 JSON:  http://$PUBLIC_IP/assets/alianzas.json"
 echo ""
 echo "Sugerencia front-end: fetch('/assets/alianzas.json?v=' + Date.now())"
 echo ""
+
+#codigo con login
