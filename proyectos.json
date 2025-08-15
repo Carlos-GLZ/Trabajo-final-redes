@@ -1,0 +1,99 @@
+[
+  {
+    "nombre_proyecto": "EcoSmart Delivery",
+    "descripcion": "Aplicación para optimizar rutas de entrega ecológicas usando inteligencia artificial.",
+    "integrantes": [
+      "Ana Torres",
+      "Luis Gómez",
+      "María José"
+    ],
+    "funding_necesario": 25000
+  },
+  {
+    "nombre_proyecto": "PetMatch",
+    "descripcion": "Plataforma estilo Bumble para adoptar mascotas de forma interactiva.",
+    "integrantes": [
+      "Julia Ríos",
+      "Fer Sánchez",
+      "Renata López"
+    ],
+    "funding_necesario": 18000
+  },
+  {
+    "nombre_proyecto": "Exxxtasis",
+    "descripcion": "App para citas espontáneas con privacidad y geolocalización mínima.",
+    "integrantes": [
+      "Juan Carlos ",
+      "Majo Sanchez",
+      "Aaron Salvador"
+    ],
+    "funding_necesario": 30000
+  },
+  {
+    "nombre_proyecto": "SmartWaste",
+    "descripcion": "Sistema de recolección de basura inteligente con sensores IoT.",
+    "integrantes": [
+      "Carlos Díaz",
+      "Lucía Mendoza"
+    ],
+    "funding_necesario": 22000
+  },
+  {
+    "nombre_proyecto": "FitFinance",
+    "descripcion": "App que combina rutinas fitness con educación financiera.",
+    "integrantes": [
+      "Roberto León",
+      "Sofía Vega",
+      "Emma Duarte"
+    ],
+    "funding_necesario": 19500
+  },
+  {
+    "nombre_proyecto": "EduPlay",
+    "descripcion": "Videojuegos educativos para niños de primaria con recompensas virtuales.",
+    "integrantes": [
+      "Diana Ruiz",
+      "Felipe Morales"
+    ],
+    "funding_necesario": 27000
+  },
+  {
+    "nombre_proyecto": "AgroScan",
+    "descripcion": "Escáner de hojas para detectar plagas en cultivos con visión computacional.",
+    "integrantes": [
+      "Mateo Jiménez",
+      "Gabriela Torres",
+      "Pablo Rivas"
+    ],
+    "funding_necesario": 35000
+  },
+  {
+    "nombre_proyecto": "SaludYA",
+    "descripcion": "Consultas médicas rápidas y gratuitas vía chatbot de WhatsApp.",
+    "integrantes": [
+      "Camila Bravo",
+      "José Ángel",
+      "Natalia Fernández"
+    ],
+    "funding_necesario": 20000
+  },
+  {
+    "nombre_proyecto": "JobQuest",
+    "descripcion": "Plataforma de búsqueda de empleo gamificada para recién egresados.",
+    "integrantes": [
+      "Ignacio Peralta",
+      "Daniela López"
+    ],
+    "funding_necesario": 23000
+  },
+  {
+    "nombre_proyecto": "CleanOcean",
+    "descripcion": "Drones acuáticos para recoger basura plástica en ríos y playas.",
+    "integrantes": [
+      "Valeria Medina",
+      "Sebastián Cruz",
+      "Héctor Vela"
+    ],
+    "funding_necesario": 40000
+  }
+]

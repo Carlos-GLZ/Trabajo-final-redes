@@ -1,0 +1,251 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: PitchZone backend - API Gateway + Lambda + DynamoDB (POST/GET projects)
+
+Parameters:
+  TableName:
+    Type: String
+    Default: pitchzone-projects
+  StageName:
+    Type: String
+    Default: prod
+  CorsAllowOrigin:
+    Type: String
+    Default: "*"
+
+Resources:
+  ProjectsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref TableName
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: createdAtIndex
+          KeySchema:
+            - AttributeName: createdAt
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoWriteRead
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:Scan
+                Resource:
+                  - !GetAtt ProjectsTable.Arn
+                  - !Sub "${ProjectsTable.Arn}/index/*"
+
+  PostProjectLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub pitchzone-post-project-${AWS::StackName}
+      Runtime: nodejs18.x
+      Handler: index.handler
+      Role: !GetAtt LambdaRole.Arn
+      Timeout: 10
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref TableName
+          CORS_ORIGIN: !Ref CorsAllowOrigin
+      Code:
+        ZipFile: |
+          const AWS = require('aws-sdk');
+          const ddb = new AWS.DynamoDB.DocumentClient();
+          const crypto = require('crypto');
+          const TABLE = process.env.TABLE_NAME;
+
+          exports.handler = async (event) => {
+            try {
+              const method = (event?.requestContext?.http?.method || event.httpMethod || '').toUpperCase();
+              if (method === 'OPTIONS') return cors(200, { ok: true });
+
+              const body = event.body ? JSON.parse(event.body) : {};
+              const req = ["nombre_proyecto","descripcion","integrantes","funding_necesario","categoria"];
+              for (const k of req) {
+                if (body[k] === undefined || body[k] === null || String(body[k]).trim() === "") {
+                  return cors(400, { ok:false, error:`Falta campo: ${k}` });
+                }
+              }
+              if (!Array.isArray(body.integrantes)) {
+                return cors(400, { ok:false, error:"'integrantes' debe ser array" });
+              }
+
+              const id = crypto.randomUUID();
+              const now = new Date().toISOString();
+
+              const item = {
+                id,
+                nombre_proyecto: String(body.nombre_proyecto),
+                descripcion: String(body.descripcion),
+                integrantes: body.integrantes,
+                funding_necesario: Number(body.funding_necesario),
+                categoria: String(body.categoria),
+                createdAt: now
+              };
+
+              await ddb.put({ TableName: TABLE, Item: item }).promise();
+              return cors(201, { ok:true, id, createdAt: now });
+            } catch (err) {
+              console.error(err);
+              return cors(500, { ok:false, error:"Error interno" });
+            }
+          };
+
+          function cors(statusCode, body){
+            return {
+              statusCode,
+              headers: {
+                "Content-Type":"application/json",
+                "Access-Control-Allow-Origin": process.env.CORS_ORIGIN || "*",
+                "Access-Control-Allow-Headers":"*",
+                "Access-Control-Allow-Methods":"OPTIONS,POST,GET"
+              },
+              body: JSON.stringify(body)
+            };
+          }
+
+  GetProjectsLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub pitchzone-get-projects-${AWS::StackName}
+      Runtime: nodejs18.x
+      Handler: index.handler
+      Role: !GetAtt LambdaRole.Arn
+      Timeout: 10
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref TableName
+          CORS_ORIGIN: !Ref CorsAllowOrigin
+      Code:
+        ZipFile: |
+          const AWS = require('aws-sdk');
+          const ddb = new AWS.DynamoDB.DocumentClient();
+          const TABLE = process.env.TABLE_NAME;
+
+          exports.handler = async (event) => {
+            try {
+              const method = (event?.requestContext?.http?.method || event.httpMethod || '').toUpperCase();
+              if (method === 'OPTIONS') return cors(200, { ok: true });
+
+              const scan = await ddb.scan({ TableName: TABLE }).promise();
+              const items = scan.Items || [];
+              items.sort((a,b) => String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
+              return cors(200, items);
+            } catch (err) {
+              console.error(err);
+              return cors(500, { ok:false, error:"Error interno" });
+            }
+          };
+
+          function cors(statusCode, body){
+            return {
+              statusCode,
+              headers: {
+                "Content-Type":"application/json",
+                "Access-Control-Allow-Origin": process.env.CORS_ORIGIN || "*",
+                "Access-Control-Allow-Headers":"*",
+                "Access-Control-Allow-Methods":"OPTIONS,POST,GET"
+              },
+              body: JSON.stringify(body)
+            };
+          }
+
+  HttpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub pitchzone-api-${AWS::StackName}
+      ProtocolType: HTTP
+      CorsConfiguration:
+        AllowMethods: [ "OPTIONS", "GET", "POST" ]
+        AllowOrigins: [ !Ref CorsAllowOrigin ]
+        AllowHeaders: [ "*" ]
+
+  PostProjectsIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostProjectLambda.Arn}/invocations
+      PayloadFormatVersion: "2.0"
+
+  GetProjectsIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetProjectsLambda.Arn}/invocations
+      PayloadFormatVersion: "2.0"
+
+  PostProjectsRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: "POST /projects"
+      Target: !Sub "integrations/${PostProjectsIntegration}"
+
+  GetProjectsRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: "GET /projects"
+      Target: !Sub "integrations/${GetProjectsIntegration}"
+
+  ApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref HttpApi
+      StageName: !Ref StageName
+      AutoDeploy: true
+
+  AllowInvokePost:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt PostProjectLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/POST/projects
+
+  AllowInvokeGet:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt GetProjectsLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/GET/projects
+
+Outputs:
+  ApiBaseUrl:
+    Description: Base URL de la API
+    Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}
+  PostProjectsEndpoint:
+    Description: Endpoint POST para crear proyectos
+    Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/projects
+  GetProjectsEndpoint:
+    Description: Endpoint GET para listar proyectos
+    Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/projects
+  DynamoTableName:
+    Description: Nombre de la tabla DynamoDB
+    Value: !Ref TableName

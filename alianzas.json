@@ -1,0 +1,425 @@
+{
+  "empresas_aliadas": [
+    {
+      "nombre": "Google",
+      "pais_origen": "Estados Unidos",
+      "tipo_apoyo": [
+        "Capacitación",
+        "Mentoría",
+        "Recursos en la nube",
+        "Networking"
+      ],
+      "programa": "Google for Startups / Google Cloud for Education",
+      "enlace": "https://startup.google.com/",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg"
+    },
+    {
+      "nombre": "Microsoft",
+      "pais_origen": "Estados Unidos",
+      "tipo_apoyo": [
+        "Capacitación",
+        "Créditos en nube",
+        "Certificaciones",
+        "Mentoría"
+      ],
+      "programa": "Microsoft Learn for Students / Azure for Students",
+      "enlace": "https://azure.microsoft.com/es-es/free/students/",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg"
+    },
+    {
+      "nombre": "IBM",
+      "pais_origen": "Estados Unidos",
+      "tipo_apoyo": [
+        "Capacitación",
+        "Hackathons",
+        "Certificaciones",
+        "Mentoría"
+      ],
+      "programa": "IBM SkillsBuild / IBM Academic Initiative",
+      "enlace": "https://skillsbuild.org/",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg"
+    },
+    {
+      "nombre": "Amazon Web Services (AWS)",
+      "pais_origen": "Estados Unidos",
+      "tipo_apoyo": [
+        "Créditos en nube",
+        "Capacitación",
+        "Mentoría",
+        "Recursos educativos"
+      ],
+      "programa": "AWS Educate",
+      "enlace": "https://aws.amazon.com/education/awseducate/",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg"
+    },
+    {
+      "nombre": "Oracle",
+      "pais_origen": "Estados Unidos",
+      "tipo_apoyo": [
+        "Capacitación",
+        "Certificaciones",
+        "Recursos en nube"
+      ],
+      "programa": "Oracle Academy",
+      "enlace": "https://academy.oracle.com/",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/5/50/Oracle_logo.svg"
+    },
+    {
+      "nombre": "Cisco",
+      "pais_origen": "Estados Unidos",
+      "tipo_apoyo": [
+        "Capacitación",
+        "Certificaciones",
+        "Mentoría"
+      ],
+      "programa": "Cisco Networking Academy",
+      "enlace": "https://www.netacad.com/",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/6/64/Cisco_logo.svg"
+    },
+    {
+      "nombre": "Softtek",
+      "pais_origen": "México",
+      "tipo_apoyo": [
+        "Pasantías",
+        "Capacitación",
+        "Mentoría"
+      ],
+      "programa": "Programa de Vinculación Universitaria",
+      "enlace": "https://www.softtek.com/es/carreras",
+      "logo": "https://www.softtek.com/images/template/softtek-logo-blue.svg"
+    },
+    {
+      "nombre": "Wizeline",
+      "pais_origen": "México",
+      "tipo_apoyo": [
+        "Bootcamps",
+        "Mentoría",
+        "Capacitación"
+      ],
+      "programa": "Wizeline Academy",
+      "enlace": "https://www.wizeline.com/wizeline-academy/",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/f/f3/Wizeline_logo.svg"
+    },
+    {
+      "nombre": "Kueski",
+      "pais_origen": "México",
+      "tipo_apoyo": [
+        "Charlas",
+        "Mentoría",
+        "Networking"
+      ],
+      "programa": "Kueski Talks y Vinculación Académica",
+      "enlace": "https://www.kueski.com/",
+      "logo": "https://www.kueski.com/images/kueski-logo.svg"
+    },
+    {
+      "nombre": "Bitso",
+      "pais_origen": "México",
+      "tipo_apoyo": [
+        "Capacitación",
+        "Eventos",
+        "Mentoría en blockchain"
+      ],
+      "programa": "Bitso Labs",
+      "enlace": "https://bitso.com/",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Bitso_logo.svg"
+    },
+    {
+      "nombre": "SAP",
+      "pais_origen": "Alemania",
+      "tipo_apoyo": [
+        "Capacitación",
+        "Certificaciones",
+        "Mentoría"
+      ],
+      "programa": "SAP University Alliances",
+      "enlace": "https://www.sap.com/about/education/university-alliances.html",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/5/59/SAP_2011_logo.svg"
+    },
+    {
+      "nombre": "Dell Technologies",
+      "pais_origen": "Estados Unidos",
+      "tipo_apoyo": [
+        "Capacitación",
+        "Mentoría",
+        "Apoyo a emprendedores"
+      ],
+      "programa": "Dell Technologies Entrepreneurship Program",
+      "enlace": "https://www.dell.com/es-mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/4/48/Dell_Logo.svg"
+    },
+    {
+      "nombre": "Apple",
+      "pais_origen": "Estados Unidos",
+      "tipo_apoyo": [
+        "Capacitación",
+        "Mentoría",
+        "Recursos para desarrollo de apps"
+      ],
+      "programa": "Apple Developer Academy",
+      "enlace": "https://developer.apple.com/academy/",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg"
+    },
+    {
+      "nombre": "Neoris",
+      "pais_origen": "México",
+      "tipo_apoyo": [
+        "Capacitación",
+        "Pasantías",
+        "Mentoría"
+      ],
+      "programa": "Neoris Talento Joven",
+      "enlace": "https://neoris.com/",
+      "logo": "https://neoris.com/images/neoris-logo.svg"
+    },
+    {
+      "nombre": "Kio Networks",
+      "pais_origen": "México",
+      "tipo_apoyo": [
+        "Capacitación",
+        "Mentoría",
+        "Apoyo en infraestructura tecnológica"
+      ],
+      "programa": "Alianzas Tecnológicas y Educación",
+      "enlace": "https://www.kionetworks.com/",
+      "logo": "https://www.kionetworks.com/hubfs/Logos/KIO_Networks.svg"
+    }
+  ],
+  "alianzas_universitarias": [
+    {
+      "id": 1,
+      "nombre": "Universidad Nacional Autónoma de México",
+      "siglas": "UNAM",
+      "tipo": "Pública",
+      "ubicacion": "Ciudad de México",
+      "sitio_web": "https://www.unam.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/7/79/UNAM_logo.svg"
+    },
+    {
+      "id": 2,
+      "nombre": "Instituto Politécnico Nacional",
+      "siglas": "IPN",
+      "tipo": "Pública",
+      "ubicacion": "Ciudad de México",
+      "sitio_web": "https://www.ipn.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/f/f1/Logo_del_Instituto_Politécnico_Nacional.svg"
+    },
+    {
+      "id": 3,
+      "nombre": "Tecnológico de Monterrey",
+      "siglas": "TEC",
+      "tipo": "Privada",
+      "ubicacion": "Monterrey, Nuevo León",
+      "sitio_web": "https://tec.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Tecnologico_de_Monterrey_logo.svg"
+    },
+    {
+      "id": 4,
+      "nombre": "Universidad de Guadalajara",
+      "siglas": "UdeG",
+      "tipo": "Pública",
+      "ubicacion": "Guadalajara, Jalisco",
+      "sitio_web": "https://www.udg.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Escudo_UdeG.svg"
+    },
+    {
+      "id": 5,
+      "nombre": "Universidad Autónoma Metropolitana",
+      "siglas": "UAM",
+      "tipo": "Pública",
+      "ubicacion": "Ciudad de México",
+      "sitio_web": "https://www.uam.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/6/64/Logo_UAM.svg"
+    },
+    {
+      "id": 6,
+      "nombre": "Universidad Iberoamericana",
+      "siglas": "UIA",
+      "tipo": "Privada",
+      "ubicacion": "Ciudad de México",
+      "sitio_web": "https://www.ibero.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_UIA_MX.svg"
+    },
+    {
+      "id": 7,
+      "nombre": "Universidad Autónoma de Nuevo León",
+      "siglas": "UANL",
+      "tipo": "Pública",
+      "ubicacion": "San Nicolás de los Garza, Nuevo León",
+      "sitio_web": "https://www.uanl.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/3/3f/Escudo_de_la_UANL.svg"
+    },
+    {
+      "id": 8,
+      "nombre": "Universidad Panamericana",
+      "siglas": "UP",
+      "tipo": "Privada",
+      "ubicacion": "Ciudad de México",
+      "sitio_web": "https://www.up.edu.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Logo_UP_MX.svg"
+    },
+    {
+      "id": 9,
+      "nombre": "Universidad Anáhuac",
+      "siglas": "ANAHUAC",
+      "tipo": "Privada",
+      "ubicacion": "Naucalpan, Estado de México",
+      "sitio_web": "https://www.anahuac.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/5/57/Logo_Universidad_Anahuac.svg"
+    },
+    {
+      "id": 10,
+      "nombre": "Universidad La Salle",
+      "siglas": "ULSA",
+      "tipo": "Privada",
+      "ubicacion": "Ciudad de México",
+      "sitio_web": "https://www.lasalle.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/8/8a/Logo_La_Salle_MX.svg"
+    },
+    {
+      "id": 11,
+      "nombre": "Universidad del Valle de México",
+      "siglas": "UVM",
+      "tipo": "Privada",
+      "ubicacion": "Ciudad de México",
+      "sitio_web": "https://www.uvm.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/6/6d/Logo_UVM.svg"
+    },
+    {
+      "id": 12,
+      "nombre": "Universidad Autónoma del Estado de México",
+      "siglas": "UAEM",
+      "tipo": "Pública",
+      "ubicacion": "Toluca, Estado de México",
+      "sitio_web": "https://www.uaemex.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Escudo_UAEMex.svg"
+    },
+    {
+      "id": 13,
+      "nombre": "Universidad Autónoma de Baja California",
+      "siglas": "UABC",
+      "tipo": "Pública",
+      "ubicacion": "Mexicali, Baja California",
+      "sitio_web": "https://www.uabc.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/e/ee/Escudo_UABC.svg"
+    },
+    {
+      "id": 14,
+      "nombre": "Universidad Veracruzana",
+      "siglas": "UV",
+      "tipo": "Pública",
+      "ubicacion": "Xalapa, Veracruz",
+      "sitio_web": "https://www.uv.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/a/a3/Logo_UV.svg"
+    },
+    {
+      "id": 15,
+      "nombre": "Universidad de las Américas Puebla",
+      "siglas": "UDLAP",
+      "tipo": "Privada",
+      "ubicacion": "Cholula, Puebla",
+      "sitio_web": "https://www.udlap.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/e/ee/Logo_UDLAP.svg"
+    },
+    {
+      "id": 16,
+      "nombre": "Centro de Investigación y de Estudios Avanzados",
+      "siglas": "CINVESTAV",
+      "tipo": "Pública",
+      "ubicacion": "Ciudad de México",
+      "sitio_web": "https://www.cinvestav.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/f/f0/Logo_CINVESTAV.svg"
+    },
+    {
+      "id": 17,
+      "nombre": "Universidad Autónoma de Yucatán",
+      "siglas": "UADY",
+      "tipo": "Pública",
+      "ubicacion": "Mérida, Yucatán",
+      "sitio_web": "https://www.uady.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/e/ed/Escudo_UADY.svg"
+    },
+    {
+      "id": 18,
+      "nombre": "Universidad Autónoma de San Luis Potosí",
+      "siglas": "UASLP",
+      "tipo": "Pública",
+      "ubicacion": "San Luis Potosí, San Luis Potosí",
+      "sitio_web": "https://www.uaslp.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/c/c3/Escudo_UASLP.svg"
+    },
+    {
+      "id": 19,
+      "nombre": "Universidad Autónoma de Coahuila",
+      "siglas": "UAdeC",
+      "tipo": "Pública",
+      "ubicacion": "Saltillo, Coahuila",
+      "sitio_web": "https://www.uadec.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/3/37/Escudo_UAdeC.svg"
+    },
+    {
+      "id": 20,
+      "nombre": "Universidad Autónoma de Chihuahua",
+      "siglas": "UACH",
+      "tipo": "Pública",
+      "ubicacion": "Chihuahua, Chihuahua",
+      "sitio_web": "https://www.uach.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/d/d9/Escudo_UACH.svg"
+    },
+    {
+      "id": 21,
+      "nombre": "Universidad Autónoma de Sinaloa",
+      "siglas": "UAS",
+      "tipo": "Pública",
+      "ubicacion": "Culiacán, Sinaloa",
+      "sitio_web": "https://www.uas.edu.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/5/5b/Escudo_UAS.svg"
+    },
+    {
+      "id": 22,
+      "nombre": "Universidad Autónoma de Querétaro",
+      "siglas": "UAQ",
+      "tipo": "Pública",
+      "ubicacion": "Santiago de Querétaro, Querétaro",
+      "sitio_web": "https://www.uaq.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Escudo_UAQ.svg"
+    },
+    {
+      "id": 23,
+      "nombre": "Universidad Autónoma Benito Juárez de Oaxaca",
+      "siglas": "UABJO",
+      "tipo": "Pública",
+      "ubicacion": "Oaxaca de Juárez, Oaxaca",
+      "sitio_web": "https://www.uabjo.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/4/44/Escudo_UABJO.svg"
+    },
+    {
+      "id": 24,
+      "nombre": "Universidad Autónoma de Aguascalientes",
+      "siglas": "UAA",
+      "tipo": "Pública",
+      "ubicacion": "Aguascalientes, Aguascalientes",
+      "sitio_web": "https://www.uaa.mx",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/1/1c/Escudo_UAA.svg"
+    },
+    {
+      "id": 25,
+      "nombre": "Global University",
+      "siglas": "GU",
+      "tipo": "Privada",
+      "ubicacion": "Aguascalientes, Aguascalientes",
+      "sitio_web": "https://www.globaluniversity.edu.mx",
+      "logo": "https://www.globaluniversity.edu.mx/templates/yootheme/cache/global-university-logo-1b2c3f.svg"
+    }
+  ],
+  "metadatos": {
+    "total_empresas": 15,
+    "total_universidades": 25,
+    "fecha_actualizacion": "2025-08-14",
+    "proposito": "Base unificada de alianzas con universidades y empresas para emprendimiento",
+    "campos_incluidos": [
+      "empresas_aliadas",
+      "alianzas_universitarias"
+    ]
+  }
+}

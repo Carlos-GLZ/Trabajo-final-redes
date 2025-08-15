@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PitchZone — Súbelo. Preséntalo. Véndelo.</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<style>
+:root{
+  --primary-orange:#FB9833;--primary-light:#FCEFEF;--primary-teal:#1B768E;
+  --primary-dark:#012538;--primary-gray:#4D555B;--success-green:#10B981;--warning-yellow:#F59E0B
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Montserrat,Arial,sans-serif;background:linear-gradient(135deg,var(--primary-dark),var(--primary-teal));color:var(--primary-light);min-height:100vh;overflow-x:hidden}
+header{background:rgba(1,37,56,.95);backdrop-filter:blur(10px);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--primary-teal);position:sticky;top:0;z-index:100}
+.logo-zone{display:flex;align-items:center;gap:12px;cursor:pointer}
+.logo-zone img{height:42px;border-radius:12px;box-shadow:0 0 18px rgba(251,152,51,.45)}
+.logo-zone span{font-weight:800;font-size:1.6rem;letter-spacing:1.6px;background:linear-gradient(45deg,var(--primary-orange),#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.badge{display:inline-block;background:var(--success-green);color:#fff;padding:4px 10px;border-radius:14px;font-weight:800;font-size:.8rem;margin-left:8px}
+nav{display:flex;gap:18px}
+nav a{color:#fff;text-decoration:none;font-weight:700;opacity:.9}
+nav a:hover{opacity:1;color:var(--primary-orange)}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:70px 16px 40px}
+.hero-logo{width:108px;height:108px;border-radius:22px;box-shadow:0 10px 36px rgba(251,152,51,.35);margin-bottom:20px}
+.hero h1{font-size:3rem;font-weight:800;line-height:1.1;background:linear-gradient(45deg,var(--primary-orange),#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{margin-top:8px;color:var(--primary-orange);font-weight:700}
+.hero-buttons{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;justify-content:center}
+.hero-btn{background:linear-gradient(45deg,var(--primary-orange),#FF6B35);color:#012538;font-weight:800;border:none;padding:12px 20px;border-radius:24px;cursor:pointer}
+.hero-btn.secondary{background:transparent;color:#fff;border:2px solid var(--primary-orange)}
+.stats{display:flex;gap:18px;margin-top:20px;flex-wrap:wrap;justify-content:center}
+.stat-item{background:rgba(255,255,255,.08);padding:10px 14px;border-radius:12px;border:1px solid rgba(251,152,51,.28)}
+.stat-number{font-size:1.6rem;font-weight:800;color:var(--primary-orange)}
+.main{background:#fff;color:#012538;margin-top:40px;border-radius:36px 36px 0 0;box-shadow:0 -12px 38px rgba(1,37,56,.28);padding:50px 0}
+.container{max-width:1180px;margin:0 auto;padding:0 18px}
+.section-title{text-align:center;font-size:2.2rem;margin-bottom:26px;font-weight:800}
+.section-title::after{content:"";display:block;margin:10px auto 0;width:90px;height:4px;background:linear-gradient(45deg,var(--primary-orange),var(--primary-teal));border-radius:3px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:18px}
+.filter-btn{background:transparent;border:2px solid var(--primary-teal);color:var(--primary-teal);padding:8px 14px;border-radius:20px;cursor:pointer;font-weight:700}
+.filter-btn.active,.filter-btn:hover{background:var(--primary-teal);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
+.card{background:#fff;border:2px solid transparent;border-radius:16px;padding:18px;box-shadow:0 8px 20px rgba(0,0,0,.08)}
+.card:hover{transform:translateY(-4px);transition:.2s;border-color:var(--primary-orange)}
+.card .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.tag{background:linear-gradient(45deg,var(--success-green),#06B6D4);color:#fff;padding:4px 10px;border-radius:14px;font-weight:800;font-size:.8rem}
+.card .title{font-weight:800;font-size:1.1rem}
+.card p{color:#4D555B}
+.row{display:flex;align-items:center;gap:10px}
+.logo{width:42px;height:42px;object-fit:contain;border-radius:8px}
+.badge-chip{display:inline-block;background:#E6F6F9;color:#012538;border:1px solid #cfe9ef;padding:4px 8px;border-radius:999px;font-size:.75rem;font-weight:800;margin:2px 4px 0 0}
+footer{background:linear-gradient(135deg,var(--primary-dark),#0F172A);color:#fff;text-align:center;padding:40px 18px;margin-top:50px;border-top:3px solid var(--primary-teal)}
+.toast{position:fixed;top:18px;right:18px;padding:10px 14px;border-radius:10px;font-weight:800;color:#fff;z-index:9999}
+.toast.info{background:#1B768E}.toast.success{background:#10B981}.toast.error{background:#EF4444}
+@media (max-width:768px){header{flex-direction:column;gap:10px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-zone" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+    <img src="logo_pitchzone.png" alt="PitchZone" class="hero-logo" onerror="this.style.display='none'">
+    <span>PITCHZONE</span>
+    <span id="alliancesBadge" class="badge" style="display:none;">Cargando...</span>
+  </div>
+  <nav>
+    <a href="#inicio">Inicio</a>
+    <a href="#proyectos">Proyectos</a>
+    <a href="#alianzas">Alianzas</a>
+    <a href="#empresas">Empresas</a>
+    <a href="#eventos">Eventos</a>
+  </nav>
+</header>
+
+<section id="inicio" class="hero">
+  <img src="logo_pitchzone.png" alt="" onerror="this.style.display='none'" class="hero-logo">
+  <h1>PitchZone</h1>
+  <p>Súbelo. Preséntalo. Véndelo.</p>
+  <div class="hero-buttons">
+    <button class="hero-btn" onclick="document.getElementById('proyectos').scrollIntoView({behavior:'smooth'})"><i class="fa-solid fa-eye"></i> Ver proyectos</button>
+    <button class="hero-btn secondary" onclick="document.getElementById('alianzas').scrollIntoView({behavior:'smooth'})"><i class="fa-solid fa-handshake-angle"></i> Ver alianzas</button>
+  </div>
+  <div class="stats">
+    <div class="stat-item"><span class="stat-number" id="totalProjects">0</span> Proyectos</div>
+    <div class="stat-item"><span class="stat-number" id="totalFunding">$0</span> Funding</div>
+    <div class="stat-item"><span class="stat-number" id="totalVotes">0</span> Votos</div>
+  </div>
+</section>
+
+<main class="main">
+  <div class="container">
+    <h2 class="section-title" id="proyectos">Proyectos Destacados</h2>
+    <div class="controls">
+      <button class="filter-btn active" onclick="filterProjects('all', this)">Todos</button>
+      <button class="filter-btn" onclick="filterProjects('tech', this)">Tecnología</button>
+      <button class="filter-btn" onclick="filterProjects('social', this)">Social</button>
+      <button class="filter-btn" onclick="filterProjects('eco', this)">Ecología</button>
+      <button class="filter-btn" onclick="filterProjects('health', this)">Salud</button>
+      <button class="filter-btn" onclick="filterProjects('education', this)">Educación</button>
+    </div>
+    <div class="grid" id="projectsGrid"></div>
+  </div>
+
+  <div class="container" style="margin-top:46px">
+    <h2 class="section-title" id="alianzas">Alianzas Universitarias</h2>
+    <div class="controls" style="gap:12px;align-items:center">
+      <span style="font-weight:800;color:#1B768E">Total:</span>
+      <span id="alliancesCount" style="font-weight:800">0</span>
+      <select id="alliancesFilter" class="filter-btn" onchange="renderAlliances()">
+        <option value="all">Todas</option>
+        <option value="Pública">Públicas</option>
+        <option value="Privada">Privadas</option>
+      </select>
+    </div>
+    <div class="grid" id="alliancesGrid"></div>
+  </div>
+
+  <div class="container" style="margin-top:46px">
+    <h2 class="section-title" id="empresas">Empresas Aliadas</h2>
+    <div class="controls" style="gap:12px;align-items:center">
+      <span style="font-weight:800;color:#1B768E">Total:</span>
+      <span id="empresasCount" style="font-weight:800">0</span>
+      <select id="empresasFilter" class="filter-btn" onchange="renderEmpresas()">
+        <option value="all">Todos los apoyos</option>
+      </select>
+    </div>
+    <div class="grid" id="empresasGrid"></div>
+  </div>
+
+  <div class="container" style="margin-top:46px">
+    <h2 class="section-title" id="eventos">Próximos Eventos</h2>
+    <div id="eventsInfo" style="text-align:center;margin-bottom:12px;color:#1B768E;font-weight:800"></div>
+    <div class="grid" id="eventsGrid"></div>
+  </div>
+</main>
+
+<footer>
+  <div style="display:flex;gap:18px;justify-content:center;flex-wrap:wrap">
+    <a href="#" onclick="toast('Instagram próximamente','info')"><i class="fab fa-instagram"></i> Instagram</a>
+    <a href="#" onclick="toast('LinkedIn próximamente','info')"><i class="fab fa-linkedin"></i> LinkedIn</a>
+    <a href="#" onclick="toast('YouTube próximamente','info')"><i class="fab fa-youtube"></i> YouTube</a>
+  </div>
+  <p style="margin-top:10px">© 2025 PitchZone</p>
+</footer>
+
+<script>
+/* ================= CONFIG ================= */
+const API_BASE = "%%API_BASE%%"; // reemplazado por el deploy script
+const API_PROJECTS = API_BASE + "/projects";
+/* ========================================== */
+
+const $ = sel => document.querySelector(sel);
+const escapeHtml = s => String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#039;' }[m]));
+
+// --------- Proyectos ---------
+let projectsData=[], currentFilter='all', projectVotes={};
+const projectCategories={
+  'EcoSmart Delivery':'eco','PetMatch':'social','Exxxtasis':'social','SmartWaste':'eco',
+  'FitFinance':'finance','EduPlay':'education','AgroScan':'tech','SaludYA':'health',
+  'JobQuest':'tech','CleanOcean':'eco'
+};
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // Cargar proyectos (API si existe)
+  try { await fetchProjectsFromApi(); } catch {}
+  if (!projectsData.length) loadProjectsFallback();
+
+  // Alianzas + empresas desde /assets/alianzas.json
+  loadAlliancesAndCompanies();
+
+  // Eventos
+  loadEvents(updateEventsBadge);
+
+  // Badge de disponibilidad de alianzas.json
+  try{
+    const r=await fetch('/assets/alianzas.json?v='+Date.now(),{cache:'no-store'});
+    const ok=r.ok;
+    const b=$('#alliancesBadge');
+    b.style.display='inline-block';
+    if(ok){ b.textContent='Alianzas OK'; b.style.background='#10B981'; }
+    else { b.textContent='Alianzas N/D'; b.style.background='#F59E0B'; b.style.color='#012538'; }
+  }catch(e){}
+});
+
+async function fetchProjectsFromApi(){
+  if (!API_BASE || API_BASE.includes('%%API_BASE%%')) return;
+  const r = await fetch(API_PROJECTS);
+  const arr = await r.json();
+  if(!Array.isArray(arr)) return;
+  projectsData = arr.map(x=>({
+    nombre_proyecto:x.nombre_proyecto, descripcion:x.descripcion,
+    integrantes:x.integrantes||[], funding_necesario:Number(x.funding_necesario)||0,
+    categoria:x.categoria||'tech'
+  }));
+  updateStats(); renderProjects(); updateDbStatus(true, projectsData.length);
+}
+function loadProjectsFallback(){
+  fetch('./proyectos.json?t='+Date.now(),{cache:'no-store'})
+    .then(r=>r.ok?r.json():Promise.reject(r.status))
+    .then(d=>{projectsData=d; updateStats(); renderProjects(); updateDbStatus(true,d.length);})
+    .catch(()=>{
+      projectsData=[
+        {nombre_proyecto:"EcoSmart Delivery",descripcion:"Optimiza rutas con IA.",integrantes:["Ana","Luis","María"],funding_necesario:25000,categoria:"eco"},
+        {nombre_proyecto:"PetMatch",descripcion:"Adopción interactiva.",integrantes:["Julia","Fer","Renata"],funding_necesario:18000,categoria:"social"},
+        {nombre_proyecto:"SmartWaste",descripcion:"IoT para recolección inteligente.",integrantes:["Carlos","Lucía"],funding_necesario:22000,categoria:"eco"}
+      ];
+      updateStats(); renderProjects(); updateDbStatus(false,projectsData.length);
+    });
+}
+function renderProjects(){
+  const grid = $('#projectsGrid');
+  const list = currentFilter==='all'?projectsData:projectsData.filter(p=>projectCategories[p.nombre_proyecto]===currentFilter);
+  grid.innerHTML = list.map(p=>`
+    <div class="card">
+      <div class="header">
+        <div class="title">${escapeHtml(p.nombre_proyecto)}</div>
+        <span class="tag">$${Number(p.funding_necesario||0).toLocaleString()}</span>
+      </div>
+      <p style="margin:6px 0 10px">${escapeHtml(p.descripcion)}</p>
+      <div class="row" style="flex-wrap:wrap">
+        ${(p.integrantes||[]).map(n=>`<span class="badge" style="background:#E6F6F9;color:#012538">${escapeHtml(n)}</span>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+function filterProjects(cat,btn){
+  currentFilter=cat;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderProjects();
+}
+function initializeVotes(){projectsData.forEach(p=>{ if(!projectVotes[p.nombre_proyecto]) projectVotes[p.nombre_proyecto]=Math.floor(Math.random()*50)+5; });}
+function updateStats(){
+  initializeVotes();
+  const tp=projectsData.length;
+  const tf=projectsData.reduce((s,p)=>s+Number(p.funding_necesario||0),0);
+  const tv=Object.values(projectVotes).reduce((s,v)=>s+v,0);
+  animateCount('#totalProjects',tp);
+  animateCount('#totalFunding',tf,true);
+  animateCount('#totalVotes',tv);
+}
+function animateCount(sel,val,money=false){
+  const el=$(sel); const start=0; const dur=900; const t0=performance.now();
+  const step=t=>{const k=Math.min((t-t0)/dur,1); const v=Math.floor(start+(val-start)*k);
+    el.textContent=money?('$'+v.toLocaleString()):v.toLocaleString(); if(k<1) requestAnimationFrame(step);};
+  requestAnimationFrame(step);
+}
+function updateDbStatus(ok,count){
+  const b=$('#alliancesBadge');
+  if(!b) return;
+  if(ok){ b.textContent='DB: '+count+' proyectos'; b.style.background='#10B981'; }
+  else { b.textContent='DEMO'; b.style.background='#F59E0B'; b.style.color='#012538'; }
+}
+
+// --------- Alianzas + Empresas ---------
+let universidadesData=[], empresasData=[];
+async function loadAlliancesAndCompanies(){
+  try{
+    const r = await fetch('/assets/alianzas.json?v='+Date.now(), {cache:'no-store'});
+    if(r.ok){
+      const obj = await r.json();
+      universidadesData = Array.isArray(obj)? obj : (Array.isArray(obj.alianzas_universitarias)? obj.alianzas_universitarias : []);
+      empresasData      = Array.isArray(obj.empresas_aliadas)? obj.empresas_aliadas : [];
+      renderAlliances();
+      setEmpresasFilterOptions();
+      renderEmpresas();
+      return;
+    }
+  }catch(e){}
+  // Fallback opcional a ./universidades.json
+  try{
+    const r = await fetch('./universidades.json?t='+Date.now(), {cache:'no-store'});
+    if(r.ok){
+      const obj = await r.json();
+      universidadesData = Array.isArray(obj)? obj : (Array.isArray(obj.alianzas_universitarias)? obj.alianzas_universitarias : []);
+      renderAlliances();
+    }
+  }catch(e){}
+  // Demo si no hay nada
+  if(!universidadesData.length){
+    universidadesData=[{id:0,nombre:"Universidad Demo",siglas:"DEMO",tipo:"Pública",ubicacion:"Ciudad Demo",sitio_web:"https://example.com"}];
+    renderAlliances();
+  }
+}
+function renderAlliances(){
+  const grid=$('#alliancesGrid'), count=$('#alliancesCount'), sel=$('#alliancesFilter');
+  const filtro=sel?sel.value:'all';
+  let data=universidadesData.slice();
+  if(filtro!=='all') data = data.filter(a=>(a.tipo||'').toLowerCase()===filtro.toLowerCase());
+  if(count) count.textContent=data.length;
+  grid.innerHTML = data.map(a=>`
+    <div class="card">
+      <div class="header">
+        <div class="row">
+          ${a.logo?`<img src="${a.logo}" class="logo" alt="${escapeHtml(a.siglas||a.nombre||'logo')}" onerror="this.style.display='none'">`:``}
+          <div>
+            <div class="title">${escapeHtml(a.nombre||a.siglas||'Universidad')}</div>
+            <div style="color:#1B768E;font-weight:700">
+              ${escapeHtml(a.siglas||'')} ${a.tipo?'• '+escapeHtml(a.tipo):''} ${a.ubicacion?'• '+escapeHtml(a.ubicacion):''}
+            </div>
+          </div>
+        </div>
+        ${a.sitio_web?`<a class="tag" href="${a.sitio_web}" target="_blank" rel="noopener">Sitio</a>`:''}
+      </div>
+      ${a.sitio_web?`<p><a href="${a.sitio_web}" target="_blank" rel="noopener">${escapeHtml(a.sitio_web)}</a></p>`:''}
+    </div>
+  `).join('');
+}
+function setEmpresasFilterOptions(){
+  const sel=$('#empresasFilter');
+  if(!sel) return;
+  const allSupports = new Set();
+  (empresasData||[]).forEach(e => (e.tipo_apoyo||[]).forEach(t => allSupports.add(String(t))));
+  sel.innerHTML = `<option value="all">Todos los apoyos</option>` +
+                  Array.from(allSupports).sort().map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+}
+function renderEmpresas(){
+  const grid=$('#empresasGrid'), count=$('#empresasCount'), sel=$('#empresasFilter');
+  const filtro = sel?sel.value:'all';
+  let data = empresasData.slice();
+  if(filtro!=='all') data = data.filter(e => Array.isArray(e.tipo_apoyo) && e.tipo_apoyo.map(String).includes(filtro));
+  if(count) count.textContent=data.length;
+  grid.innerHTML = data.map(e=>`
+    <div class="card">
+      <div class="header">
+        <div class="row">
+          ${e.logo?`<img src="${e.logo}" class="logo" alt="${escapeHtml(e.nombre||'logo')}" onerror="this.style.display='none'">`:``}
+          <div>
+            <div class="title">${escapeHtml(e.nombre||'Empresa')}</div>
+            <div style="color:#1B768E;font-weight:700">${escapeHtml(e.pais_origen||'')}</div>
+          </div>
+        </div>
+        ${e.enlace?`<a class="tag" href="${e.enlace}" target="_blank" rel="noopener">${e.programa?escapeHtml(e.programa):'Sitio'}</a>`:''}
+      </div>
+      ${(Array.isArray(e.tipo_apoyo)?e.tipo_apoyo:[]).map(t=>`<span class="badge-chip">${escapeHtml(t)}</span>`).join('')}
+    </div>
+  `).join('');
+}
+
+// --------- Eventos ---------
+let eventsData=[];
+function loadEvents(done){
+  fetch('./eventos.json?t='+Date.now(),{cache:'no-store'})
+    .then(r=>r.ok?r.json():Promise.reject(r.status))
+    .then(d=>{eventsData=normalizeEvents(d); renderEvents(); if(done) done();})
+    .catch(()=>{eventsData=[
+      {titulo:"PitchZone Demo Day LATAM",fecha:proxDia(7),hora:"18:00",modalidad:"Online",descripcion:"Presenta tu pitch a mentores e inversionistas.",registro_url:"#"},
+      {titulo:"Taller: Storytelling para Pitches",fecha:proxDia(14),hora:"17:00",modalidad:"Híbrido",descripcion:"Estructura un pitch ganador en 60 minutos.",registro_url:"#"},
+      {titulo:"Matchmaking Startups × Universidades",fecha:proxDia(21),hora:"19:00",modalidad:"Online",descripcion:"Conecta con universidades para alianzas y talento.",registro_url:"#"}
+    ]; renderEvents(); if(done) done();});
+}
+function normalizeEvents(o){ if(Array.isArray(o))return o; if(Array.isArray(o.eventos))return o.eventos; return []; }
+function renderEvents(){
+  const now=new Date();
+  const up=eventsData.map(e=>({...e,_d:new Date(e.fecha||e.date||Date.now())}))
+    .filter(e=>!isNaN(e._d)&&e._d>=new Date(now.toDateString()))
+    .sort((a,b)=>a._d-b._d).slice(0,3);
+  $('#eventsInfo').textContent = up.length?`Mostrando ${up.length} próximos`:'Sin eventos próximos';
+  $('#eventsGrid').innerHTML = up.map(e=>`
+    <div class="card">
+      <div class="header">
+        <div class="title">${escapeHtml(e.titulo||'Evento')}</div>
+        ${e.registro_url?`<a class="tag" target="_blank" rel="noopener" href="${e.registro_url}">Registro</a>`:''}
+      </div>
+      <div style="color:#1B768E;font-weight:700;margin-bottom:8px">${formatFecha(e._d)} ${e.hora?'• '+escapeHtml(e.hora):''} ${e.modalidad?'• '+escapeHtml(e.modalidad):''}</div>
+      ${e.descripcion?`<p>${escapeHtml(e.descripcion)}</p>`:''}
+    </div>
+  `).join('');
+}
+function formatFecha(d){try{return d.toLocaleDateString('es-MX',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});}catch{return d.toISOString().slice(0,10);}}
+function proxDia(n){const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+function upcomingCountFrom(data){const today=new Date(),mid=new Date(today.toDateString());return (data||[]).map(e=>new Date(e.fecha||e.date||e._d||Date.now())).filter(d=>!isNaN(d)&&d>=mid).length;}
+function updateEventsBadge(){ /* reservado */ }
+
+// --------- Util ---------
+function toast(msg,type='success'){
+  const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200);
+}
+</script>
+</body>
+</html>
