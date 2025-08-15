@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: PitchZone Auth - Cognito + Authorizer para API
+
+Parameters:
+  ApiId:
+    Type: String
+  StageName:
+    Type: String
+    Default: prod
+
+Resources:
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: pitchzone-users
+      UsernameAttributes: [email]
+      AutoVerifiedAttributes: [email]
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+          RequireUppercase: true
+      VerificationMessageTemplate:
+        DefaultEmailOption: CONFIRM_WITH_CODE
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      ClientName: web-client
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_SRP_AUTH
+
+  JwtAuthorizer:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties:
+      ApiId: !Ref ApiId
+      AuthorizerType: JWT
+      Name: cognito-jwt
+      IdentitySource:
+        - "$request.header.Authorization"
+      JwtConfiguration:
+        Audience: [ !Ref UserPoolClient ]
+        Issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}"
+
+Outputs:
+  UserPoolId:       { Value: !Ref UserPool }
+  UserPoolClientId: { Value: !Ref UserPoolClient }
+  AuthorizerId:     { Value: !Ref JwtAuthorizer }
+  Region:           { Value: !Ref AWS::Region }

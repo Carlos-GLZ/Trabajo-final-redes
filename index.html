@@ -6,6 +6,7 @@
 <title>PitchZone — Súbelo. Preséntalo. Véndelo.</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<script src="https://unpkg.com/amazon-cognito-identity-js@6.3.9/dist/amazon-cognito-identity.min.js"></script>
 <style>
 :root{
   --primary-orange:#FB9833;--primary-light:#FCEFEF;--primary-teal:#1B768E;
@@ -18,9 +19,9 @@ header{background:rgba(1,37,56,.95);backdrop-filter:blur(10px);padding:14px 24px
 .logo-zone img{height:42px;border-radius:12px;box-shadow:0 0 18px rgba(251,152,51,.45)}
 .logo-zone span{font-weight:800;font-size:1.6rem;letter-spacing:1.6px;background:linear-gradient(45deg,var(--primary-orange),#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .badge{display:inline-block;background:var(--success-green);color:#fff;padding:4px 10px;border-radius:14px;font-weight:800;font-size:.8rem;margin-left:8px}
-nav{display:flex;gap:18px}
-nav a{color:#fff;text-decoration:none;font-weight:700;opacity:.9}
-nav a:hover{opacity:1;color:var(--primary-orange)}
+nav{display:flex;gap:18px;align-items:center}
+nav a, nav button{color:#fff;text-decoration:none;font-weight:700;opacity:.9;background:none;border:none;cursor:pointer}
+nav a:hover, nav button:hover{opacity:1;color:var(--primary-orange)}
 .hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:70px 16px 40px}
 .hero-logo{width:108px;height:108px;border-radius:22px;box-shadow:0 10px 36px rgba(251,152,51,.35);margin-bottom:20px}
 .hero h1{font-size:3rem;font-weight:800;line-height:1.1;background:linear-gradient(45deg,var(--primary-orange),#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
@@ -51,6 +52,11 @@ nav a:hover{opacity:1;color:var(--primary-orange)}
 footer{background:linear-gradient(135deg,var(--primary-dark),#0F172A);color:#fff;text-align:center;padding:40px 18px;margin-top:50px;border-top:3px solid var(--primary-teal)}
 .toast{position:fixed;top:18px;right:18px;padding:10px 14px;border-radius:10px;font-weight:800;color:#fff;z-index:9999}
 .toast.info{background:#1B768E}.toast.success{background:#10B981}.toast.error{background:#EF4444}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9990}
+.modal .content{background:#fff;color:#012538;border-radius:14px;max-width:420px;margin:6% auto;padding:20px;position:relative}
+.modal .close{position:absolute;right:12px;top:8px;font-size:22px;cursor:pointer}
+.modal input{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;margin:6px 0}
+.modal button{background:#FB9833;color:#012538;border:none;padding:10px 14px;border-radius:10px;font-weight:800;cursor:pointer}
 @media (max-width:768px){header{flex-direction:column;gap:10px}}
 </style>
 </head>
@@ -67,6 +73,8 @@ footer{background:linear-gradient(135deg,var(--primary-dark),#0F172A);color:#fff
     <a href="#alianzas">Alianzas</a>
     <a href="#empresas">Empresas</a>
     <a href="#eventos">Eventos</a>
+    <button id="loginBtn" onclick="openModal('loginModal')">Iniciar sesión</button>
+    <button id="logoutBtn" style="display:none" onclick="logout()">Cerrar sesión</button>
   </nav>
 </header>
 
@@ -141,16 +149,125 @@ footer{background:linear-gradient(135deg,var(--primary-dark),#0F172A);color:#fff
   <p style="margin-top:10px">© 2025 PitchZone</p>
 </footer>
 
+<!-- Modales Auth -->
+<div id="loginModal" class="modal">
+  <div class="content">
+    <span class="close" onclick="closeModal('loginModal')">&times;</span>
+    <h3 style="margin-bottom:8px">Iniciar sesión</h3>
+    <input id="loginEmail" type="email" placeholder="Correo" required />
+    <input id="loginPass" type="password" placeholder="Contraseña" required />
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button onclick="signIn()">Entrar</button>
+      <button style="background:#1B768E;color:#fff" onclick="openModal('signupModal'); closeModal('loginModal')">Crear cuenta</button>
+    </div>
+  </div>
+</div>
+
+<div id="signupModal" class="modal">
+  <div class="content">
+    <span class="close" onclick="closeModal('signupModal')">&times;</span>
+    <h3 style="margin-bottom:8px">Crear cuenta</h3>
+    <input id="signupEmail" type="email" placeholder="Correo" required />
+    <input id="signupPass" type="password" placeholder="Contraseña (8+ caracteres)" required />
+    <button onclick="signUp()">Registrarme</button>
+  </div>
+</div>
+
+<div id="confirmModal" class="modal">
+  <div class="content">
+    <span class="close" onclick="closeModal('confirmModal')">&times;</span>
+    <h3 style="margin-bottom:8px">Confirma tu correo</h3>
+    <input id="confirmEmail" type="email" placeholder="Correo" required />
+    <input id="confirmCode" type="text" placeholder="Código recibido" required />
+    <button onclick="confirmSignUp()">Confirmar</button>
+  </div>
+</div>
+
 <script>
-/* ================= CONFIG ================= */
-const API_BASE = "%%API_BASE%%"; // reemplazado por el deploy script
+/* ================= CONFIG (inyectado por deploy) ================= */
+const API_BASE = "%%API_BASE%%"; // reemplazado por el deploy
 const API_PROJECTS = API_BASE + "/projects";
-/* ========================================== */
+
+const COGNITO = {
+  region: '%%COGNITO_REGION%%',
+  userPoolId: '%%COGNITO_USER_POOL_ID%%',
+  clientId: '%%COGNITO_APP_CLIENT_ID%%'
+};
+/* ================================================================= */
 
 const $ = sel => document.querySelector(sel);
 const escapeHtml = s => String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#039;' }[m]));
+function toast(msg,type='success'){const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200);}
 
-// --------- Proyectos ---------
+function openModal(id){const m=$('#'+id); if(m){m.style.display='block'; document.body.style.overflow='hidden';}}
+function closeModal(id){const m=$('#'+id); if(m){m.style.display='none'; document.body.style.overflow='auto';}}
+
+/* ================= Auth (Cognito) ================= */
+let idToken = localStorage.getItem('pz_id_token') || '';
+let cognitoUser = null;
+
+function pool(){
+  const poolData={ UserPoolId: COGNITO.userPoolId, ClientId: COGNITO.clientId };
+  return new AmazonCognitoIdentity.CognitoUserPool(poolData);
+}
+
+function signUp(){
+  const email=$('#signupEmail').value.trim();
+  const pass=$('#signupPass').value;
+  if(!email || !pass){ toast('Completa correo y contraseña','error'); return; }
+  const attributeList=[ new AmazonCognitoIdentity.CognitoUserAttribute({Name:'email',Value:email}) ];
+  pool().signUp(email, pass, attributeList, null, (err, result)=>{
+    if(err){ console.error(err); toast(err.message||'Error de registro','error'); return; }
+    toast('Código enviado a tu correo','info');
+    $('#confirmEmail').value=email;
+    closeModal('signupModal'); openModal('confirmModal');
+  });
+}
+
+function confirmSignUp(){
+  const email=$('#confirmEmail').value.trim();
+  const code=$('#confirmCode').value.trim();
+  if(!email || !code){ toast('Correo y código requeridos','error'); return; }
+  const userData={ Username:email, Pool:pool() };
+  const user=new AmazonCognitoIdentity.CognitoUser(userData);
+  user.confirmRegistration(code, true, (err, result)=>{
+    if(err){ console.error(err); toast(err.message||'Error al confirmar','error'); return; }
+    toast('¡Correo confirmado! Ya puedes iniciar sesión','success');
+    closeModal('confirmModal'); openModal('loginModal');
+  });
+}
+
+function signIn(){
+  const email=$('#loginEmail').value.trim();
+  const pass=$('#loginPass').value;
+  if(!email || !pass){ toast('Completa correo y contraseña','error'); return; }
+  const authDetails=new AmazonCognitoIdentity.AuthenticationDetails({Username:email, Password:pass});
+  const userData={ Username:email, Pool:pool() };
+  cognitoUser=new AmazonCognitoIdentity.CognitoUser(userData);
+  cognitoUser.authenticateUser(authDetails, {
+    onSuccess: (session)=>{
+      idToken = session.getIdToken().getJwtToken();
+      localStorage.setItem('pz_id_token', idToken);
+      localStorage.setItem('pz_username', email);
+      toast('Inicio de sesión correcto','success');
+      $('#loginBtn').style.display='none';
+      $('#logoutBtn').style.display='inline-block';
+      closeModal('loginModal');
+    },
+    onFailure: (err)=>{ console.error(err); toast(err.message||'Credenciales inválidas','error'); }
+  });
+}
+
+function logout(){
+  try{ pool().getCurrentUser()?.signOut(); }catch(e){}
+  idToken=''; cognitoUser=null;
+  localStorage.removeItem('pz_id_token'); localStorage.removeItem('pz_username');
+  $('#loginBtn').style.display='inline-block';
+  $('#logoutBtn').style.display='none';
+  toast('Sesión cerrada','info');
+}
+
+/* ================= Datos: Proyectos ================= */
 let projectsData=[], currentFilter='all', projectVotes={};
 const projectCategories={
   'EcoSmart Delivery':'eco','PetMatch':'social','Exxxtasis':'social','SmartWaste':'eco',
@@ -159,6 +276,9 @@ const projectCategories={
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Estado UI login
+  if(idToken){ $('#loginBtn').style.display='none'; $('#logoutBtn').style.display='inline-block'; }
+
   // Cargar proyectos (API si existe)
   try { await fetchProjectsFromApi(); } catch {}
   if (!projectsData.length) loadProjectsFallback();
@@ -167,7 +287,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadAlliancesAndCompanies();
 
   // Eventos
-  loadEvents(updateEventsBadge);
+  loadEvents();
 
   // Badge de disponibilidad de alianzas.json
   try{
@@ -190,19 +310,19 @@ async function fetchProjectsFromApi(){
     integrantes:x.integrantes||[], funding_necesario:Number(x.funding_necesario)||0,
     categoria:x.categoria||'tech'
   }));
-  updateStats(); renderProjects(); updateDbStatus(true, projectsData.length);
+  updateStats(); renderProjects();
 }
 function loadProjectsFallback(){
   fetch('./proyectos.json?t='+Date.now(),{cache:'no-store'})
     .then(r=>r.ok?r.json():Promise.reject(r.status))
-    .then(d=>{projectsData=d; updateStats(); renderProjects(); updateDbStatus(true,d.length);})
+    .then(d=>{projectsData=d; updateStats(); renderProjects();})
     .catch(()=>{
       projectsData=[
         {nombre_proyecto:"EcoSmart Delivery",descripcion:"Optimiza rutas con IA.",integrantes:["Ana","Luis","María"],funding_necesario:25000,categoria:"eco"},
         {nombre_proyecto:"PetMatch",descripcion:"Adopción interactiva.",integrantes:["Julia","Fer","Renata"],funding_necesario:18000,categoria:"social"},
         {nombre_proyecto:"SmartWaste",descripcion:"IoT para recolección inteligente.",integrantes:["Carlos","Lucía"],funding_necesario:22000,categoria:"eco"}
       ];
-      updateStats(); renderProjects(); updateDbStatus(false,projectsData.length);
+      updateStats(); renderProjects();
     });
 }
 function renderProjects(){
@@ -243,14 +363,8 @@ function animateCount(sel,val,money=false){
     el.textContent=money?('$'+v.toLocaleString()):v.toLocaleString(); if(k<1) requestAnimationFrame(step);};
   requestAnimationFrame(step);
 }
-function updateDbStatus(ok,count){
-  const b=$('#alliancesBadge');
-  if(!b) return;
-  if(ok){ b.textContent='DB: '+count+' proyectos'; b.style.background='#10B981'; }
-  else { b.textContent='DEMO'; b.style.background='#F59E0B'; b.style.color='#012538'; }
-}
 
-// --------- Alianzas + Empresas ---------
+/* ================= Alianzas + Empresas ================= */
 let universidadesData=[], empresasData=[];
 async function loadAlliancesAndCompanies(){
   try{
@@ -274,7 +388,6 @@ async function loadAlliancesAndCompanies(){
       renderAlliances();
     }
   }catch(e){}
-  // Demo si no hay nada
   if(!universidadesData.length){
     universidadesData=[{id:0,nombre:"Universidad Demo",siglas:"DEMO",tipo:"Pública",ubicacion:"Ciudad Demo",sitio_web:"https://example.com"}];
     renderAlliances();
@@ -335,17 +448,17 @@ function renderEmpresas(){
   `).join('');
 }
 
-// --------- Eventos ---------
+/* ================= Eventos ================= */
 let eventsData=[];
-function loadEvents(done){
+function loadEvents(){
   fetch('./eventos.json?t='+Date.now(),{cache:'no-store'})
     .then(r=>r.ok?r.json():Promise.reject(r.status))
-    .then(d=>{eventsData=normalizeEvents(d); renderEvents(); if(done) done();})
+    .then(d=>{eventsData=normalizeEvents(d); renderEvents();})
     .catch(()=>{eventsData=[
       {titulo:"PitchZone Demo Day LATAM",fecha:proxDia(7),hora:"18:00",modalidad:"Online",descripcion:"Presenta tu pitch a mentores e inversionistas.",registro_url:"#"},
       {titulo:"Taller: Storytelling para Pitches",fecha:proxDia(14),hora:"17:00",modalidad:"Híbrido",descripcion:"Estructura un pitch ganador en 60 minutos.",registro_url:"#"},
       {titulo:"Matchmaking Startups × Universidades",fecha:proxDia(21),hora:"19:00",modalidad:"Online",descripcion:"Conecta con universidades para alianzas y talento.",registro_url:"#"}
-    ]; renderEvents(); if(done) done();});
+    ]; renderEvents();});
 }
 function normalizeEvents(o){ if(Array.isArray(o))return o; if(Array.isArray(o.eventos))return o.eventos; return []; }
 function renderEvents(){
@@ -367,13 +480,63 @@ function renderEvents(){
 }
 function formatFecha(d){try{return d.toLocaleDateString('es-MX',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});}catch{return d.toISOString().slice(0,10);}}
 function proxDia(n){const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
-function upcomingCountFrom(data){const today=new Date(),mid=new Date(today.toDateString());return (data||[]).map(e=>new Date(e.fecha||e.date||e._d||Date.now())).filter(d=>!isNaN(d)&&d>=mid).length;}
-function updateEventsBadge(){ /* reservado */ }
 
-// --------- Util ---------
-function toast(msg,type='success'){
-  const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200);
+/* ================= Envío de proyecto (protegido) ================= */
+async function submitProject(event){
+  event.preventDefault();
+  const formData={
+    nombre_proyecto:document.getElementById('projectName')?.value.trim(),
+    descripcion:document.getElementById('projectDescription')?.value.trim(),
+    integrantes:(document.getElementById('teamMembers')?.value||'').split(',').map(s=>s.trim()).filter(Boolean),
+    funding_necesario:parseInt(document.getElementById('fundingAmount')?.value||'0',10),
+    categoria:document.getElementById('projectCategory')?.value
+  };
+  const btn=event.target.querySelector('.submit-btn');const orig=btn.innerHTML;btn.innerHTML='<div class="loading"></div> Enviando...';btn.disabled=true;
+  try{
+    if (!API_BASE || API_BASE.includes('%%API_BASE%%')) throw new Error('API no configurada');
+    if (!idToken){ closeModal('uploadModal'); openModal('loginModal'); throw new Error('Debes iniciar sesión para subir proyectos'); }
+
+    const res=await fetch(API_PROJECTS,{
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+idToken },
+      body:JSON.stringify(formData)
+    });
+    const data=await res.json();
+    if(!res.ok||!data.ok) throw new Error(data.error||'Error al guardar');
+
+    projectsData.unshift(formData);
+    projectCategories[formData.nombre_proyecto]=formData.categoria;
+    projectVotes[formData.nombre_proyecto]=0;
+    updateStats(); renderProjects();
+    toast('¡Proyecto enviado y guardado! 🚀','success');
+    event.target.reset();
+  }catch(e){ console.error(e); toast('Error: '+e.message,'error'); }
+  finally{btn.innerHTML=orig; btn.disabled=false;}
 }
+
+/* ================= Util varios ================= */
+function upcomingCountFrom(data){const today=new Date(),mid=new Date(today.toDateString());return (data||[]).map(e=>new Date(e.fecha||e.date||e._d||Date.now())).filter(d=>!isNaN(d)&&d>=mid).length;}
 </script>
+
+<!-- Modal Upload -->
+<div id="uploadModal" class="modal">
+  <div class="content">
+    <span class="close" onclick="closeModal('uploadModal')">&times;</span>
+    <h3 style="margin-bottom:10px"><i class="fas fa-rocket"></i> Sube tu Proyecto</h3>
+    <form id="uploadForm" onsubmit="submitProject(event)">
+      <div><label>Nombre del Proyecto *</label><input id="projectName" required></div>
+      <div><label>Descripción *</label><textarea id="projectDescription" required rows="4" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px"></textarea></div>
+      <div><label>Integrantes (separados por coma) *</label><input id="teamMembers" required></div>
+      <div><label>Funding Necesario (USD) *</label><input id="fundingAmount" required type="number" min="1000"></div>
+      <div><label>Categoría *</label>
+        <select id="projectCategory" required>
+          <option value="">Selecciona</option><option value="tech">Tecnología</option><option value="social">Social</option><option value="eco">Ecología</option><option value="health">Salud</option><option value="education">Educación</option><option value="finance">Finanzas</option>
+        </select>
+      </div>
+      <button type="submit" class="submit-btn" style="margin-top:10px">Enviar</button>
+    </form>
+  </div>
+</div>
 </body>
 </html>
+
